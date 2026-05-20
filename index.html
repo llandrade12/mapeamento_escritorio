@@ -1111,7 +1111,7 @@ input,select,textarea{cursor:text}
               </div>
               <div class="backup-item">
                 <div class="backup-icon bi-green"><i class="fa-solid fa-qrcode"></i></div>
-                <div class="backup-info"><strong>Folha de Etiquetas QR</strong><span>Figurinhas prontas para imprimir</span></div>
+                <div class="backup-info"><strong>Folha de Etiquetas QR</strong><span>Somente Notebooks e Celulares</span></div>
                 <button class="secondary-btn" onclick="exportStickerSheet()">Gerar</button>
               </div>
               <div class="backup-item">
@@ -1192,7 +1192,6 @@ async function sha256(text){
 async function getMasterHash(){
   let stored = localStorage.getItem(MASTER_HASH_KEY);
   if(!stored){
-    // default password hash for "espartano260708"
     stored = await sha256('espartano260708');
     localStorage.setItem(MASTER_HASH_KEY, stored);
   }
@@ -1255,7 +1254,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 async function bootApp(){
-  await getMasterHash(); // ensure hash initialized
+  await getMasterHash();
   const ls = document.getElementById('loading-screen');
   const app = document.getElementById('app');
   ls.classList.add('fade-out');
@@ -1382,13 +1381,11 @@ function setupNav(){
   document.getElementById('sidebar-toggle').addEventListener('click',toggleSidebar);
   document.getElementById('sidebar-overlay')?.addEventListener('click',closeSidebarMobile);
 
-  // Mobile search toggle
   document.getElementById('topbar-search-btn')?.addEventListener('click',()=>{
     const tb = document.getElementById('topbar');
     const open = tb.classList.toggle('search-open');
     if(open) setTimeout(()=>document.getElementById('globalSearch')?.focus(),60);
   });
-  // Close search bar when clicking outside
   document.addEventListener('click',e=>{
     const tb = document.getElementById('topbar');
     if(tb.classList.contains('search-open') && !tb.contains(e.target)){
@@ -1396,7 +1393,6 @@ function setupNav(){
     }
   });
 
-  // Map filters
   ['mapFilterSector','mapFilterFunction','mapFilterState'].forEach(id=>{
     document.getElementById(id)?.addEventListener('change', e=>{
       mapFilters[id==='mapFilterSector'?'sector':id==='mapFilterFunction'?'function':'state'] = e.target.value;
@@ -1411,7 +1407,6 @@ function setupNav(){
     document.getElementById('mapFilterClear')?.classList.add('hidden');
   });
 
-  // Export buttons
   document.getElementById('exportCsv')?.addEventListener('click', exportCsv);
   document.getElementById('exportExcel')?.addEventListener('click', exportExcel);
   document.getElementById('exportPdf')?.addEventListener('click', exportPdfReport);
@@ -1419,7 +1414,6 @@ function setupNav(){
   document.getElementById('exportJson')?.addEventListener('click', exportJson);
   document.getElementById('importJson')?.addEventListener('change', e=>importJsonFile(e));
 
-  // Page-level filters
   ['people','sheets','attendances','notebooks','phones','offices','wifis','items'].forEach(pg=>{
     const inp = document.getElementById(`filter-${pg}`);
     if(inp) inp.addEventListener('input',()=>renderPage(pg));
@@ -1483,20 +1477,17 @@ function updateNavCounts(){
 }
 
 function renderDashboard(){
-  // Counts
   ['person','notebook','phone','office','wifi','sheet','attendance','item'].forEach(t=>{
     const id = {person:'peopleCount',notebook:'notebookCount',phone:'phoneCount',office:'officeCount',wifi:'wifiCount',sheet:'sheetCount',attendance:'attendanceCount',item:'itemCount'}[t];
     const el = document.getElementById(id);
     if(el) el.textContent = records.filter(r=>r.type===t).length;
   });
 
-  // Recent
   const recent = [...records].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,6);
   document.getElementById('recentList').innerHTML = recent.length
     ? recent.map(r=>recordRow(r)).join('')
     : emptyState('Nenhum registro ainda.');
 
-  // Top owners
   const people = records.filter(r=>r.type==='person')
     .map(p=>({...p,count:linkedRecords(p.id).length}))
     .sort((a,b)=>b.count-a.count).slice(0,5);
@@ -1504,7 +1495,6 @@ function renderDashboard(){
     ? people.map(p=>recordRow(p,p.count+' vínculo(s)')).join('')
     : emptyState('Cadastre funcionários.');
 
-  // Alerts
   renderAlerts();
   renderCharts();
 }
@@ -1521,7 +1511,6 @@ function renderAlerts(){
   desligados.forEach(p=>alerts.push({type:'danger',icon:'fa-user-slash',text:`${p.name} foi desligado(a).`}));
   emManutencao.forEach(r=>alerts.push({type:'warn',icon:'fa-wrench',text:`${r.name} em manutenção.`}));
 
-  // Check Office renewals within 30 days
   const today = new Date();
   records.filter(r=>r.type==='office'&&r.details?.renewal).forEach(r=>{
     const ren = new Date(r.details.renewal);
@@ -1767,7 +1756,6 @@ function setupModal(){
   document.getElementById('deleteRecord').addEventListener('click', deleteCurrentRecord);
   document.getElementById('openEntryModal').addEventListener('click', ()=>openModal({type:'person'}));
 
-  // Type selector populates options
   const sel = document.getElementById('recordType');
   types.forEach(t=>{
     const opt = document.createElement('option');
@@ -1778,7 +1766,6 @@ function setupModal(){
     if(e.target?.dataset?.detail==='role') updateOwnerOptions();
   });
 
-  // Close on overlay click
   document.getElementById('modal-overlay').addEventListener('click', e=>{ if(e.target===document.getElementById('modal-overlay')) closeModal(); });
 }
 
@@ -1805,7 +1792,6 @@ function openModal(record={}){
 
 function closeModal(){
   document.getElementById('modal-overlay').classList.remove('active');
-  // Remove dynamic panels
   document.getElementById('personLinksPanel')?.remove();
   document.getElementById('multiOwnerWrap')?.remove();
   currentAttachments = [];
@@ -2198,15 +2184,8 @@ function exportPdfReport(){
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Inter',Arial,sans-serif;color:#1a1a1a;background:#fff;font-size:13px;line-height:1.55}
-
-    /* ── CAPA ── */
-    .cover{
-      min-height:100vh;display:flex;flex-direction:column;justify-content:center;
-      background:linear-gradient(145deg,#0d2b24 0%,#1f6b59 60%,#2a9a7c 100%);
-      color:#fff;padding:60px 56px;page-break-after:always;
-    }
-    .cover-logo{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;
-      display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:48px}
+    .cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,#0d2b24 0%,#1f6b59 60%,#2a9a7c 100%);color:#fff;padding:60px 56px;page-break-after:always;}
+    .cover-logo{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:48px}
     .cover h1{font-size:38px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px}
     .cover .subtitle{font-size:16px;opacity:.75;margin-bottom:48px}
     .cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:480px}
@@ -2218,215 +2197,81 @@ function exportPdfReport(){
     .cover-stat{text-align:center}
     .cover-stat .num{font-size:26px;font-weight:700;display:block}
     .cover-stat .lbl{font-size:10px;opacity:.65;margin-top:2px}
-
-    /* ── PRINT BUTTON ── */
-    .print-bar{
-      position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb;
-      padding:14px 32px;display:flex;align-items:center;justify-content:space-between;
-      box-shadow:0 2px 8px rgba(0,0,0,.06);
-    }
+    .print-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.06);}
     .print-bar span{font-size:12px;color:#666}
-    .btn-print{
-      padding:9px 22px;background:#1f6b59;color:#fff;border:none;border-radius:8px;
-      font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;
-      transition:background .15s;
-    }
+    .btn-print{padding:9px 22px;background:#1f6b59;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s;}
     .btn-print:hover{background:#154d3f}
     @media print{.print-bar,.no-print{display:none!important}}
-
-    /* ── CONTEÚDO PRINCIPAL ── */
     .content{padding:40px 48px;max-width:1000px;margin:0 auto}
-
-    /* ── SEÇÃO ── */
     .section{margin-bottom:44px;page-break-inside:avoid}
-    .section-header{
-      display:flex;align-items:center;gap:12px;
-      border-bottom:2px solid #1f6b59;padding-bottom:10px;margin-bottom:18px;
-    }
-    .section-icon{
-      width:32px;height:32px;border-radius:8px;background:#e8f5ef;
-      display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
-    }
+    .section-header{display:flex;align-items:center;gap:12px;border-bottom:2px solid #1f6b59;padding-bottom:10px;margin-bottom:18px;}
+    .section-icon{width:32px;height:32px;border-radius:8px;background:#e8f5ef;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
     .section-header h2{font-size:16px;font-weight:700;color:#1f6b59;flex:1}
-    .section-count{
-      background:#e8f5ef;color:#1f6b59;font-size:11px;font-weight:700;
-      border-radius:20px;padding:3px 10px;
-    }
-    .no-records{
-      background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;
-      padding:16px 20px;color:#9ca3af;font-style:italic;font-size:12px;
-    }
-
-    /* ── TABELA ── */
+    .section-count{background:#e8f5ef;color:#1f6b59;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;}
+    .no-records{background:#f9fafb;border:1px dashed #d1d5db;border-radius:8px;padding:16px 20px;color:#9ca3af;font-style:italic;font-size:12px;}
     table{width:100%;border-collapse:collapse;font-size:12px}
     thead tr{background:#1f6b59}
-    thead th{
-      padding:10px 13px;text-align:left;font-weight:600;color:#fff;
-      font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-    }
+    thead th{padding:10px 13px;text-align:left;font-weight:600;color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.05em;}
     thead th:first-child{border-radius:6px 0 0 0}
     thead th:last-child{border-radius:0 6px 0 0}
-    tbody tr{border-bottom:1px solid #f0f0f0;transition:background .1s}
+    tbody tr{border-bottom:1px solid #f0f0f0}
     tbody tr:nth-child(even){background:#f9fafe}
     tbody tr:hover{background:#f0f7f4}
     tbody td{padding:10px 13px;vertical-align:top;color:#374151}
     tbody td:first-child{font-weight:600;color:#111;max-width:160px}
-    .badge-setor{
-      display:inline-block;background:#eff6ff;color:#3b82f6;
-      border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;
-    }
+    .badge-setor{display:inline-block;background:#eff6ff;color:#3b82f6;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;}
     .detail-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
-    .chip{
-      background:#f3f4f6;color:#4b5563;border-radius:4px;
-      padding:2px 7px;font-size:10px;white-space:nowrap;
-    }
+    .chip{background:#f3f4f6;color:#4b5563;border-radius:4px;padding:2px 7px;font-size:10px;white-space:nowrap;}
     .notes-text{color:#6b7280;font-style:italic;font-size:11px}
     .empty-cell{color:#d1d5db}
-
-    /* ── RODAPÉ ── */
-    .footer{
-      margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;
-      display:flex;justify-content:space-between;align-items:center;color:#9ca3af;font-size:11px;
-    }
-
-    /* ── RESUMO ── */
+    .footer{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;color:#9ca3af;font-size:11px;}
     .summary-table{margin-bottom:40px}
     .summary-table table{max-width:380px}
     .summary-table thead th{background:#374151}
     .summary-table tfoot td{font-weight:700;border-top:2px solid #e5e7eb;background:#f9fafb}
-
-    @media print{
-      body{font-size:11px}
-      .content{padding:16px 20px}
-      .section{page-break-inside:avoid}
-      .cover{min-height:unset;padding:32px 36px}
-    }
+    @media print{body{font-size:11px}.content{padding:16px 20px}.section{page-break-inside:avoid}.cover{min-height:unset;padding:32px 36px}}
   `;
 
-  const typeIcons = {person:'👤',notebook:'💻',phone:'📱',office:'🏢',wifi:'📶',sheet:'📊',attendance:'🗓️',item:'📦'};
+  const typeIconsMap = {person:'👤',notebook:'💻',phone:'📱',office:'🏢',wifi:'📶',sheet:'📊',attendance:'🗓️',item:'📦'};
 
   const sectionsHtml = types.map(t=>{
     const list = records.filter(r=>r.type===t);
-    const icon = typeIcons[t]||'📄';
-    if(!list.length) return `
-      <div class="section">
-        <div class="section-header">
-          <div class="section-icon">${icon}</div>
-          <h2>${escapeHtml(typeLabels[t])}</h2>
-          <span class="section-count">0 registros</span>
-        </div>
-        <div class="no-records">Nenhum registro cadastrado nesta categoria.</div>
-      </div>`;
-
+    const icon = typeIconsMap[t]||'📄';
+    if(!list.length) return `<div class="section"><div class="section-header"><div class="section-icon">${icon}</div><h2>${escapeHtml(typeLabels[t])}</h2><span class="section-count">0 registros</span></div><div class="no-records">Nenhum registro cadastrado nesta categoria.</div></div>`;
     const rows = list.map(r=>{
       const own = r.type==='office'?getOwners(r).map(p=>p.name).join(', '):(getOwner(r)?.name||'');
       const detailsRaw = (schemas[r.type]||[]).filter(s=>r.details?.[s.key]);
-      const detailsHtml = detailsRaw.length
-        ? `<div class="detail-chips">${detailsRaw.map(s=>`<span class="chip"><b>${escapeHtml(s.label)}:</b> ${escapeHtml(r.details[s.key])}</span>`).join('')}</div>`
-        : `<span class="empty-cell">—</span>`;
-      const notesHtml = r.notes ? `<span class="notes-text">${escapeHtml(r.notes)}</span>` : `<span class="empty-cell">—</span>`;
-      const setorHtml = r.department ? `<span class="badge-setor">${escapeHtml(r.department)}</span>` : `<span class="empty-cell">—</span>`;
-      return `<tr>
-        <td>${escapeHtml(r.name)}</td>
-        <td>${setorHtml}</td>
-        <td>${escapeHtml(own)||'<span class="empty-cell">—</span>'}</td>
-        <td>${detailsHtml}</td>
-        <td>${notesHtml}</td>
-      </tr>`;
+      const detailsHtml = detailsRaw.length?`<div class="detail-chips">${detailsRaw.map(s=>`<span class="chip"><b>${escapeHtml(s.label)}:</b> ${escapeHtml(r.details[s.key])}</span>`).join('')}</div>`:`<span class="empty-cell">—</span>`;
+      const notesHtml = r.notes?`<span class="notes-text">${escapeHtml(r.notes)}</span>`:`<span class="empty-cell">—</span>`;
+      const setorHtml = r.department?`<span class="badge-setor">${escapeHtml(r.department)}</span>`:`<span class="empty-cell">—</span>`;
+      return `<tr><td>${escapeHtml(r.name)}</td><td>${setorHtml}</td><td>${escapeHtml(own)||'<span class="empty-cell">—</span>'}</td><td>${detailsHtml}</td><td>${notesHtml}</td></tr>`;
     }).join('');
-
-    return `
-      <div class="section">
-        <div class="section-header">
-          <div class="section-icon">${icon}</div>
-          <h2>${escapeHtml(typeLabels[t])}</h2>
-          <span class="section-count">${list.length} registro${list.length!==1?'s':''}</span>
-        </div>
-        <table>
-          <thead><tr><th>Nome</th><th>Setor</th><th>Funcionário(s)</th><th>Detalhes</th><th>Observações</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
+    return `<div class="section"><div class="section-header"><div class="section-icon">${icon}</div><h2>${escapeHtml(typeLabels[t])}</h2><span class="section-count">${list.length} registro${list.length!==1?'s':''}</span></div><table><thead><tr><th>Nome</th><th>Setor</th><th>Funcionário(s)</th><th>Detalhes</th><th>Observações</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
 
-  const coverStats = totalByType.slice(0,4).map(t=>`
-    <div class="cover-stat">
-      <span class="num">${t.count}</span>
-      <div class="lbl">${escapeHtml(t.label)}</div>
-    </div>`).join('');
+  const coverStats = totalByType.slice(0,4).map(t=>`<div class="cover-stat"><span class="num">${t.count}</span><div class="lbl">${escapeHtml(t.label)}</div></div>`).join('');
 
-  const html = `<!doctype html><html lang="pt-BR"><head>
-    <meta charset="utf-8">
-    <title>Relatório — ${escapeHtml(settings.company||'Mapa do Escritório')}</title>
-    <style>${css}</style>
-  </head><body>
-
-  <div class="cover no-print">
-    <div class="cover-logo">🗺️</div>
-    <h1>Mapa do Escritório</h1>
-    <p class="subtitle">Relatório completo de ativos e colaboradores</p>
-    <div class="cover-meta">
-      <div class="cover-meta-item"><label>Empresa</label><span>${escapeHtml(settings.company||'—')}</span></div>
-      <div class="cover-meta-item"><label>Gerado em</label><span>${escapeHtml(new Date().toLocaleString('pt-BR'))}</span></div>
-      <div class="cover-meta-item"><label>Total de registros</label><span>${totalRecords}</span></div>
-      <div class="cover-meta-item"><label>Categorias</label><span>${totalByType.length}</span></div>
-    </div>
-    ${coverStats ? `<div class="cover-summary"><h3>Resumo por categoria</h3><div class="cover-summary-grid">${coverStats}</div></div>` : ''}
-  </div>
-
-  <div class="print-bar no-print">
-    <span>Mapa do Escritório · ${escapeHtml(settings.company||'')} · ${escapeHtml(new Date().toLocaleDateString('pt-BR'))}</span>
-    <button class="btn-print" onclick="window.print()">🖨️ &nbsp;Imprimir / Salvar PDF</button>
-  </div>
-
-  <div class="content">
-    <div class="summary-table">
-      <table>
-        <thead><tr><th>Categoria</th><th style="text-align:center">Registros</th></tr></thead>
-        <tbody>${summaryRows}</tbody>
-        <tfoot><tr><td>Total geral</td><td style="text-align:center">${totalRecords}</td></tr></tfoot>
-      </table>
-    </div>
-    ${sectionsHtml}
-    <div class="footer">
-      <span>Mapa do Escritório · ${escapeHtml(settings.company||'')}</span>
-      <span>Gerado em ${escapeHtml(new Date().toLocaleString('pt-BR'))}</span>
-    </div>
-  </div>
-
-  <script>setTimeout(()=>window.print(),600)<\/script>
-  </body></html>`;
+  const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório — ${escapeHtml(settings.company||'Mapa do Escritório')}</title><style>${css}</style></head><body>
+  <div class="cover no-print"><div class="cover-logo">🗺️</div><h1>Mapa do Escritório</h1><p class="subtitle">Relatório completo de ativos e colaboradores</p><div class="cover-meta"><div class="cover-meta-item"><label>Empresa</label><span>${escapeHtml(settings.company||'—')}</span></div><div class="cover-meta-item"><label>Gerado em</label><span>${escapeHtml(new Date().toLocaleString('pt-BR'))}</span></div><div class="cover-meta-item"><label>Total de registros</label><span>${totalRecords}</span></div><div class="cover-meta-item"><label>Categorias</label><span>${totalByType.length}</span></div></div>${coverStats?`<div class="cover-summary"><h3>Resumo por categoria</h3><div class="cover-summary-grid">${coverStats}</div></div>`:''}</div>
+  <div class="print-bar no-print"><span>Mapa do Escritório · ${escapeHtml(settings.company||'')} · ${escapeHtml(new Date().toLocaleDateString('pt-BR'))}</span><button class="btn-print" onclick="window.print()">🖨️ &nbsp;Imprimir / Salvar PDF</button></div>
+  <div class="content"><div class="summary-table"><table><thead><tr><th>Categoria</th><th style="text-align:center">Registros</th></tr></thead><tbody>${summaryRows}</tbody><tfoot><tr><td>Total geral</td><td style="text-align:center">${totalRecords}</td></tr></tfoot></table></div>${sectionsHtml}<div class="footer"><span>Mapa do Escritório · ${escapeHtml(settings.company||'')}</span><span>Gerado em ${escapeHtml(new Date().toLocaleString('pt-BR'))}</span></div></div>
+  <script>setTimeout(()=>window.print(),600)<\/script></body></html>`;
 
   win.document.write(html);
   win.document.close();
   showToast('Relatório PDF aberto!','success');
 }
 
-function reportSection(title,type){
-  // mantido por compatibilidade, mas exportPdfReport não usa mais esta função
-  const list=records.filter(r=>r.type===type);
-  if(!list.length) return `<h2>${escapeHtml(title)}</h2><p>Nenhum registro.</p>`;
-  return `<h2>${escapeHtml(title)}</h2><table><thead><tr><th>Nome</th><th>Setor</th><th>Funcionário(s)</th><th>Detalhes</th><th>Observações</th></tr></thead><tbody>`+
-    list.map(r=>{
-      const own=r.type==='office'?getOwners(r).map(p=>p.name).join(', '):(getOwner(r)?.name||'');
-      return`<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.department)}</td><td>${escapeHtml(own)}</td><td>${escapeHtml(detailsSummary(r))}</td><td>${escapeHtml(r.notes)}</td></tr>`;
-    }).join('')+`</tbody></table>`;
-}
-
 /* ══════════════════════════════════════════
-   STICKER SHEET (FOLHA DE ETIQUETAS QR)
+   STICKER SHEET — SOMENTE NOTEBOOKS E CELULARES
+   QR CODE: fundo preto, módulos brancos (igual à imagem de referência)
 ══════════════════════════════════════════ */
 function buildPatrimony(r, seqByType){
-  const prefixes = {notebook:'NB',phone:'CEL',office:'MS',wifi:'WF',sheet:'PL',attendance:'AT',item:'IT'};
+  const prefixes = {notebook:'NB',phone:'CEL'};
   const prefix = prefixes[r.type] || 'AT';
-
-  // If already has a patrimony, use it
   if(r.details?.patrimony) return r.details.patrimony;
-
-  // Build from username (notebook's own username or owner's username)
   const username = (r.details?.username || getOwner(r)?.details?.username || '').trim();
   const seq = String(seqByType[r.type] || 1).padStart(3,'0');
-
   if(username){
     const slug = username.toUpperCase().replace(/[^A-Z0-9]/g,'.').replace(/\.+/g,'.').replace(/^\.|\.$/g,'').slice(0,12);
     return `${prefix}-${slug}-${seq}`;
@@ -2435,9 +2280,13 @@ function buildPatrimony(r, seqByType){
 }
 
 function exportStickerSheet(){
+  /* ── Apenas Notebooks e Celulares ── */
   const assets = records.filter(r => r.type === 'notebook' || r.type === 'phone');
 
-  if(!assets.length){ showToast('Nenhum ativo cadastrado.','warning'); return; }
+  if(!assets.length){
+    showToast('Nenhum Notebook ou Celular cadastrado.','warning');
+    return;
+  }
 
   const baseUrl = (settings.githubUrl||'').replace(/\/$/,'');
   if(!baseUrl){
@@ -2453,40 +2302,35 @@ function exportStickerSheet(){
     seqByType[r.type] = (seqByType[r.type]||0) + 1;
     const patrimony = buildPatrimony(r, seqByType);
     const serial = r.details?.serial || r.details?.imei || '';
-    const ownerName = r.type==='office'
-      ? getOwners(r).map(p=>p.name).join(', ')
-      : (getOwner(r)?.name || '');
+    const ownerName = getOwner(r)?.name || '';
     const url = `${baseUrl}?id=${r.id}`;
     return {id: r.id, name: r.name, type: r.type, patrimony, serial, ownerName, department: r.department||'', url};
   });
 
-  const typeColors = {notebook:'#1f6b59',phone:'#2563eb',office:'#7c3aed',wifi:'#0891b2',sheet:'#d97706',attendance:'#dc2626',item:'#4b5563'};
-
+  /* ── HTML da folha de etiquetas ── */
   const stickersHtml = stickersData.map((s,i) => {
-    const color = typeColors[s.type] || '#1f6b59';
-    const label = typeLabels[s.type];
+    const isPhone = s.type === 'phone';
     return `<div class="sticker">
-      <div class="sticker-head" style="background:${color}">
-        <span class="s-company">${escapeHtml(company)}</span>
-        <span class="s-type-badge">${escapeHtml(label)}</span>
-      </div>
       <div class="s-qr-wrap">
         <div class="s-qr" id="sqr${i}"></div>
       </div>
-      <div class="sticker-body">
-        <div class="s-pat" style="color:${color}">${escapeHtml(s.patrimony)}</div>
+      <div class="sticker-info">
+        <div class="s-pat">${escapeHtml(s.patrimony)}</div>
         <div class="s-name">${escapeHtml(s.name)}</div>
-        <div class="s-divider"></div>
-        ${s.ownerName ? `<div class="s-row"><span class="s-lbl">USR</span>${escapeHtml(s.ownerName)}</div>` : ''}
-        ${s.department ? `<div class="s-row"><span class="s-lbl">SET</span>${escapeHtml(s.department)}</div>` : ''}
-        ${s.serial ? `<div class="s-row"><span class="s-lbl">S/N</span>${escapeHtml(s.serial)}</div>` : ''}
+        ${s.ownerName ? `<div class="s-owner">${escapeHtml(s.ownerName)}</div>` : ''}
+        ${s.serial ? `<div class="s-serial">S/N: ${escapeHtml(s.serial)}</div>` : ''}
       </div>
     </div>`;
   }).join('');
 
+  /* ── Script de geração dos QR codes ──
+     colorDark  = '#ffffff'  → módulos BRANCOS
+     colorLight = '#000000'  → fundo PRETO
+     exatamente como a imagem de referência
+  ── */
   const qrInitScript = stickersData.map((s,i) => {
-    const safeUrl = s.url.replace(/'/g, "\\'");
-    return `new QRCode(document.getElementById('sqr${i}'),{text:'${safeUrl}',width:110,height:110,colorDark:'#111',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.H});`;
+    const safeUrl = s.url.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `new QRCode(document.getElementById('sqr${i}'),{text:'${safeUrl}',width:160,height:160,colorDark:'#ffffff',colorLight:'#000000',correctLevel:QRCode.CorrectLevel.H});`;
   }).join('\n    ');
 
   const html = `<!doctype html><html lang="pt-BR"><head>
@@ -2496,97 +2340,139 @@ function exportStickerSheet(){
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{font-size:12px}
-    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f0f0;color:#111}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#1a1a1a;color:#fff}
 
+    /* ── barra superior ── */
     .print-bar{
-      position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb;
+      position:sticky;top:0;z-index:100;
+      background:#111;border-bottom:1px solid #333;
       padding:12px 28px;display:flex;align-items:center;justify-content:space-between;
-      box-shadow:0 2px 8px rgba(0,0,0,.07);
+      box-shadow:0 2px 8px rgba(0,0,0,.4);
     }
-    .print-bar h2{font-size:15px;font-weight:700}
-    .print-bar span{font-size:12px;color:#6b7280}
+    .print-bar h2{font-size:15px;font-weight:700;color:#fff}
+    .print-bar span{font-size:12px;color:#888}
     .btn-print{
       padding:8px 20px;background:#1f6b59;color:#fff;border:none;border-radius:8px;
       font-size:13px;font-weight:600;cursor:pointer;
     }
     .btn-print:hover{background:#154d3f}
 
+    /* ── grade de etiquetas ── */
     .sheet{
-      padding:20px;
+      padding:24px;
       display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
-      max-width:860px;
-      margin:22px auto;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:16px;
+      max-width:960px;
+      margin:0 auto;
     }
 
+    /* ── cada etiqueta ── */
     .sticker{
-      background:#fff;border-radius:10px;
+      background:#000;
+      border-radius:8px;
       overflow:hidden;
-      box-shadow:0 2px 8px rgba(0,0,0,.1);
-      border:1px solid #e5e7eb;
-      display:flex;flex-direction:column;
-      aspect-ratio:1/1;
+      border:1px solid #333;
+      display:flex;
+      flex-direction:column;
     }
 
-    /* ── cabeçalho colorido ── */
-    .sticker-head{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:7px 10px;color:#fff;flex-shrink:0;
-    }
-    .s-company{font-size:9px;font-weight:700;letter-spacing:.05em;opacity:.85;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}
-    .s-type-badge{font-size:8px;font-weight:800;
-      background:rgba(255,255,255,.22);padding:2px 7px;border-radius:999px;white-space:nowrap}
-
-    /* ── QR centralizado ── */
+    /* ── área do QR: fundo preto, QR ocupa tudo ── */
     .s-qr-wrap{
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
       flex:1;
-      display:flex;align-items:center;justify-content:center;
-      background:#fafafa;border-bottom:1px solid #f0f0f0;
-      overflow:hidden;
     }
-    .s-qr{display:flex;align-items:center;justify-content:center}
-    .s-qr img,.s-qr canvas{display:block!important;border-radius:4px;max-width:100%;max-height:100%}
+    .s-qr{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      line-height:0;
+    }
+    /* forçar canvas/img do QRCode a ficar sem borda extra */
+    .s-qr canvas,
+    .s-qr img{
+      display:block !important;
+      border:none !important;
+      outline:none !important;
+    }
 
-    /* ── informações ── */
-    .sticker-body{
-      padding:8px 11px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;
+    /* ── faixa de info embaixo ── */
+    .sticker-info{
+      background:#111;
+      border-top:1px solid #2a2a2a;
+      padding:8px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
     }
     .s-pat{
-      font-size:12.5px;font-weight:800;letter-spacing:.03em;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.04em;
       font-family:'Courier New',monospace;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-      line-height:1.2;
+      color:#3ab896;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .s-name{
-      font-size:10px;font-weight:600;color:#374151;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-      line-height:1.3;
+      font-size:10px;
+      font-weight:600;
+      color:#e0e0e0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .s-divider{height:1px;background:#f0f0f0;margin:2px 0}
-    .s-row{
-      font-size:9px;color:#4b5563;
-      display:flex;align-items:center;gap:5px;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    .s-owner{
+      font-size:9px;
+      color:#888;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .s-lbl{
-      font-size:7.5px;font-weight:800;color:#9ca3af;letter-spacing:.06em;
-      background:#f3f4f6;padding:1px 4px;border-radius:3px;flex-shrink:0;
+    .s-serial{
+      font-size:9px;
+      color:#666;
+      font-family:'Courier New',monospace;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
+    /* ── impressão ── */
     @media print{
-      .print-bar{display:none}
       body{background:#fff}
-      .sheet{margin:0;padding:6mm;max-width:100%;gap:6px}
-      .sticker{box-shadow:none;border:1px dashed #bbb;break-inside:avoid;aspect-ratio:1/1}
+      .print-bar{display:none}
+      .sheet{
+        margin:0;
+        padding:6mm;
+        max-width:100%;
+        gap:8px;
+        grid-template-columns:repeat(4,1fr);
+      }
+      .sticker{
+        border:1px solid #000;
+        break-inside:avoid;
+        background:#000 !important;
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
+      .sticker-info{
+        background:#111 !important;
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
       @page{size:A4;margin:6mm}
     }
   </style>
 </head><body>
   <div class="print-bar">
     <div>
-      <h2>📦 Folha de Etiquetas QR</h2>
+      <h2>📦 Etiquetas QR — Notebooks &amp; Celulares</h2>
       <span>${escapeHtml(company)} · ${stickersData.length} etiqueta(s) · gerado em ${new Date().toLocaleString('pt-BR')}</span>
     </div>
     <button class="btn-print" onclick="window.print()">🖨️&nbsp; Imprimir / Salvar PDF</button>
